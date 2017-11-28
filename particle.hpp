@@ -14,11 +14,13 @@ public:
     particle();
     
     void resetForce();
+    void addSentenceForce();
     void addScatteredForce();
     void addAppearForce();
     void addDampingForce();
     void disappearOtherWords();
     void appearAllWords();
+    void appearAllCircles();
     void setInitialCondition(float px, float py, float pz, float vx, float vy, float vz);
     void update();
     void draw(ofxFontStash * particleFont);
@@ -30,6 +32,8 @@ public:
     float angle;
     float angleSpeed;
     float opacity;
+    float opacitySpeed;
+    float sentenceForceX, sentenceForceY, sentenceForceZ;
     float scatterdForceX, scatterdForceY, scatterdForceZ;
     float appearForceX, appearForceY, appearForceZ;
     float raindropForceX, raindropForceY, raindropForceZ;

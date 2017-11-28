@@ -25,7 +25,6 @@ public:
     void initSetting();
     void initTweetDataProcessing();
     void initTextParticle();
-    void eraseAllWordParticle();
     
     // SOCKET PART
     bool isConnected;
@@ -37,7 +36,6 @@ public:
     // SOUND PART
     void soundSetup();
     void soundEffectStop();
-    void audioOut(float* buffer, int bufferSize, int nChannels);
     
     ofxSocketIO socketIO;
     
@@ -57,7 +55,8 @@ public:
     
     float forceValue;
     
-    vector<particle> particles;
+    vector<particle> sentenceParticles;
+    vector<particle> wordParticles;
     vector<particle> letterParticles;
     vector<particle> circleParticles;
     
@@ -76,10 +75,11 @@ public:
     vector<string> tweetText;
     string tweetTextFinal;
     
-    int count;
+    float countSentence;
+    float spd;
+    int countWord;
+    
     int gotDataTotalNum;
-    //    ofColor selectedColor;
-    //    int selectedEmotion;
     
     // GRAPHIC SIDE @YUN
     ofAppGLFWWindow * WINDOW;
@@ -110,13 +110,11 @@ public:
     vector<Boid> blobs8;
     
     // BOOLEAN FOR SCENE CHANGE
-//    bool bInfoText;
     bool bHide;
     bool bRipple;
-//    bool border;
-    bool otherWordsDisapper;
     bool scattered;
-    bool showTweetRandomly;
+    bool showSentenceTransition;
+
     
     
     // GUI
@@ -135,22 +133,31 @@ public:
     ofxIntSlider effectBTime;
     ofxIntSlider effectCStart;
     ofxIntSlider effectCTime;
-    ofxToggle line;
+//    ofxToggle line;
     ofxPanel gui;
+    
+    // Scene Managament
+    ofxIntSlider scene0;
+    ofxIntSlider scene1;
+    ofxIntSlider scene2;
+    ofxIntSlider scene3;
+    ofxIntSlider scene4;
+    ofxIntSlider scene5;
+    ofxPanel sceneManager;
     
     //TIMER
     float startTime;
     float timer;
     
-    // VIDEO PLAYER
-    //    ofVideoGrabber vidGrabber;
-    //    int camWidth;
-    //    int camHeight;
+    // VIDEO
+    ofAVFoundationPlayer video1;
+    ofAVFoundationPlayer video2;
     
-    ofAVFoundationPlayer video;
-    bool bVideo;
-//    bool isPlayed;
-    
+    bool bVideo1;
+    bool bVideo2;
+    bool vid1isPlayed;
+    bool vid2isPlayed;
+
     // SOUND PLAYER
     ofSoundPlayer  sound1;
     vector <ofSoundPlayer> sclouds;

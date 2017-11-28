@@ -4,7 +4,7 @@
 
 //========================================================================
 int main( ){
-    
+
     // Full resolution
     int w1 = 11520;
     int h1 = 972;
@@ -40,8 +40,8 @@ int main( ){
     settings.multiMonitorFullScreen = true;
     settings.windowMode = OF_WINDOW;
     settings.decorated = false;            // eliminated the frame bar
-    settings.setPosition(ofVec2f(0,-30));  // didn't work at IAC
-//    settings.setPosition(ofVec2f(-settings.width/3,0));
+//    settings.setPosition(ofVec2f(0,-30));  // didn't work at IAC
+    settings.setPosition(ofVec2f(-settings.width/2.5,0));
 //
     //    settings.resizable = false;            // need to be tested (comment out)
     //    glfwWindowHint(GLFW_DECORATED, GL_FALSE);

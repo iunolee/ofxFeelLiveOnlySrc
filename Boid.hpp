@@ -7,14 +7,12 @@ class Boid {
     
 public:
     void setup(){
-        //  location.set(30, 30);
-        velocity.set(ofRandom(-1, 1), ofRandom(-1, 1));
+        velocity.set(ofRandom(-2, 2), ofRandom(-2, 2));
         acceleration.set(0, 0);
         r = 2;
         maxSpeed = 5;
         maxForce = 0.01;
         mass = 3;
-        
     }
     
     // Method to update location
@@ -26,7 +24,6 @@ public:
         location += velocity;
         // Reset acceleration to 0 each cycle
         acceleration *= 0;
-        
     }
     
     void applyForce(const ofVec2f & force) {

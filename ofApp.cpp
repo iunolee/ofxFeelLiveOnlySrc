@@ -13,42 +13,50 @@ void ofApp::setup(){
     // GRAPHIC SETTING
     ofSetFrameRate(30);
     ofEnableAlphaBlending();
-    //    ofEnableSmoothing();
     ofEnableAntiAliasing();
     
     // BOOLEAN SETTING
-//    bInfoText = true;
     bRipple = false;
-    bVideo = false;
+    bVideo1 = false;
+    bVideo2 = false;
     bHide = true;
-//    isPlayed = false;
+    vid1isPlayed = true;
+    vid2isPlayed = true;
     urlShow = true;
-    showTweetRandomly = false;
-    otherWordsDisapper = false;
     scattered = false;
+    showSentenceTransition = true;
     
     // GUI
     gui.setup();
-    gui.setPosition(ofGetWindowSize()[0]/2, 20);
+    gui.setPosition(ofGetWindowSize()[0]/2, guiPosition);
     gui.add(rippleSize.setup("size", 100, 1, 150));
     gui.add(rippleDistance.setup("distance", 2, 1, 10));
     gui.add(rippleDamping.setup("damping", 0.995, 0.900, 0.999));
-    gui.add(urlYpos.setup("urlYpos", ofGetWindowHeight()/2, 0, ofGetWindowHeight()));
-    gui.add(urlXpos1.setup("urlXpos1", 200, 0, ofGetWindowSize()[0]));
-    gui.add(urlXpos2.setup("urlXpos2", ofGetWindowSize()[0]/2, 0, ofGetWindowSize()[0]));
-    gui.add(urlXpos3.setup("urlXpos3", ofGetWindowSize()[0]*2/3, 0, ofGetWindowSize()[0]));
-    gui.add(urlSize.setup("urlSize", 150, 10, 300));
-    gui.add(instructionSize.setup("instructionSize", 30, 10, 300));
-    gui.add(effectAStart.setup("effectAStart", 10000, 0, 100000));
-    gui.add(effectATime.setup ("effectATime", 1000,  0, 10000));    // maximum 10 second
-    gui.add(effectBStart.setup("effectBStart", 30000, 0, 100000));
-    gui.add(effectBTime.setup ("effectBTime", 3000,  0, 10000));
-    gui.add(effectCStart.setup("effectCStart", 50000, 0, 100000));
-    gui.add(effectCTime.setup ("effectCTime", 5000,  0, 10000));
-    gui.add(line.setup("line", false));
-    gui.loadFromFile("settings.xml");
+    gui.add(urlYpos.setup("urlYpos", 300, 0, ofGetWindowHeight()));
+    gui.add(urlXpos1.setup("urlXpos1", 1075, 0, ofGetWindowSize()[0]));
+    gui.add(urlXpos2.setup("urlXpos2", 3380, 0, ofGetWindowSize()[0]));
+    gui.add(urlXpos3.setup("urlXpos3", 5450, 0, ofGetWindowSize()[0]));
+    gui.add(urlSize.setup("urlSize", 100, 10, 300));
+    gui.add(instructionSize.setup("instructionSize", 26, 10, 300));
+    gui.add(effectAStart.setup("effectAStart", 50, 0, 1000));
+    gui.add(effectATime.setup ("effectATime", 10,  0, 1000));
+    gui.add(effectBStart.setup("effectBStart", 150, 0, 1000));
+    gui.add(effectBTime.setup ("effectBTime", 30,  0, 1000));
+    gui.add(effectCStart.setup("effectCStart", 250, 0, 1000));
+    gui.add(effectCTime.setup ("effectCTime", 50,  0, 1000));
+//    gui.loadFromFile("settings.xml");
     ofHideCursor();
     
+    // SCENE MANAGER
+    sceneManager.setup();
+    sceneManager.setPosition(ofGetWindowSize()[0]/2 + 230, guiPosition);
+    sceneManager.add(scene0.setup("scene0",  350, 0, 3000 )); // blobs go to attraction
+    sceneManager.add(scene1.setup("scene1",  450, 0, 3000 )); // video 1 play
+    sceneManager.add(scene2.setup("scene2", 550, 0, 3000 )); // video 2 play, blobs disappear
+    sceneManager.add(scene3.setup("scene3", 750, 0, 3000 )); // sentences come and go out
+    sceneManager.add(scene4.setup("scene4", 820, 0, 3000 )); // words particles come in
+    sceneManager.add(scene5.setup("scene5", 1000, 0, 3000 )); // words go out letters drop
+
     // SET STARTING POINT OF RIPPLE
     rip.allocate(ofGetWindowSize()[0], ofGetWindowHeight());
     
@@ -64,24 +72,26 @@ void ofApp::setup(){
     initSetting();
     
     // SET TWEET TEXT SIZE & RAINDROP SPEED
-    fontSize = 20;
+    fontSize = 23;
     forceValue = 0.005;
     
-    // VIDEO
-    video.setPixelFormat(OF_PIXELS_RGBA);
-    //setPixelFormat() has to be called before loading a movie...
-    //vid_calm.setDesiredFrameRate(30);
-    video.setLoopState(OF_LOOP_NORMAL);
-    video.load("1117_Orbits_LinuxFont_PJ_Q90.mov");
-
+    // VIDEO LOAD
+    video1.setPixelFormat(OF_PIXELS_RGBA);          // has to be called before loading a movie
+    video1.setLoopState(OF_LOOP_NORMAL);
+    video1.load("1117_Orbits_LinuxFont_PJ_Q90.mov");
+    video2.setPixelFormat(OF_PIXELS_RGBA);          // has to be called before loading a movie
+    video2.setLoopState(OF_LOOP_NORMAL);
+    video2.load("1117_Orbits_LinuxFont_PJ_Q90.mov");
+    
+    // Setup font for particle
+    font.setup("LinLibertine_R.ttf", 1.0, 1024, false, 0, 1);
     
     // URL AND INSTRUCTION
     url.load("Roboto-Thin.ttf",urlSize, true, false, true);
     instruction.load("Roboto-Thin.ttf",instructionSize, true, false, true);
-
+    
     // SOUND SETUP
     soundSetup();
-
     
     // ATTRACTOR SETUP
     for (int i = 0; i < 8 ; i++) {
@@ -173,7 +183,9 @@ void ofApp::initSetting () {
     
     
     //SET COUNT TO VISUALIZE EACH WORD ONE BY ONE
-    count = 0;
+    countSentence = 0;
+    spd = 0;
+    countWord = 0;
 }
 
 //--------------------------------------------------------------
@@ -223,10 +235,8 @@ void ofApp::initTweetDataProcessing() {
                 tweetText.push_back(temp);
             }
         }
-        
-        //MAKE SET OF TWEET TEXT INTO ONE STRING
-        tweetTextFinal = accumulate(begin(tweetText), end(tweetText), tweetTextFinal);
-        cout<<"tweet data processing done"<<endl;
+        //Shuffle to change the order when showing each sentence
+        random_shuffle(tweetText.begin(), tweetText.end());
     }
     else
     {
@@ -237,71 +247,90 @@ void ofApp::initTweetDataProcessing() {
 //--------------------------------------------------------------
 
 void ofApp::initTextParticle(){
-    /*INIT TEXT PARTICLE*/
+    
+    //Sentence particle setup
+    for (int i = 0; i < tweetText.size(); i++){
+        ofRectangle sentencebbox = font.getBBox(tweetText[i], fontSize*15, 0, 0);
+        float currentSentenceWidth = sentencebbox.width;
+        float currentSentenceHeight = sentencebbox.height;
+        
+        particle sentenceParticle;
+        sentenceParticle.setInitialCondition(ofGetWindowSize()[0]/2-currentSentenceWidth/2,ofGetWindowHeight()/2,500, 0, 0, 0);
+        sentenceParticle.particleFontSize = fontSize*15;
+        sentenceParticle.angle = ofRandom(-3, 3);
+        sentenceParticle.finalWord = tweetText[i];
+        sentenceParticle.fontColor = colors[0];
+        sentenceParticle.opacity = 150;
+        sentenceParticle.sentenceForceX = ofRandom(-0.005, 0.005);
+        sentenceParticle.sentenceForceY = ofRandom(-0.005, 0.005);
+        sentenceParticle.sentenceForceZ = ofRandom(-20, -35);
+        sentenceParticles.push_back(sentenceParticle);
+    }
+    
+    //MAKE SET OF TWEET TEXT INTO ONE STRING
+    tweetTextFinal = accumulate(begin(tweetText), end(tweetText), tweetTextFinal);
+    cout<<"tweet data processing done"<<endl;
     
     //SPLIT TWEET TEXT INTO EVERY WORDS
-    vector<string> letters;
-    letters = ofSplitString(tweetTextFinal, " ");
-    
-    //LOAD FONT
-    font.setup("LinLibertine_R.ttf", 1.0, 1024, false, 0, 1);
+    vector<string> words;
+    words = ofSplitString(tweetTextFinal, " ");
     
     //MAKE WORD PARTICLE WITH ASSIGNING ATTRIBUTES
-    ofRectangle firstbbox = font.getBBox(letters[0], fontSize, 0, 0);
+    ofRectangle firstbbox = font.getBBox(words[0], fontSize, 0, 0);
     float fontHeight = firstbbox.height;
-    
     float xPosition = -firstbbox.width;
     float yPosition = fontHeight;
-    
     ofRectangle spacebbox = font.getBBox("s", fontSize, 0, 0);
     float space = spacebbox.width;
     
-    for (int i = 0; i < letters.size(); i++){
-        ofRectangle currentbbox = font.getBBox(letters[i], fontSize, 0, 0);
+    //WORD PARTICLE SETUP
+    for (int i = 0; i < words.size(); i++){
+        ofRectangle currentbbox = font.getBBox(words[i], fontSize, 0, 0);
         float currentFontWidth = currentbbox.width;
-        particle myParticle;
-        myParticle.setInitialCondition(xPosition,yPosition,0, 0, 0, 0);
-        myParticle.particleFontSize = fontSize;
-        myParticle.angle = 0;
-        myParticle.finalWord = letters[i];
-        myParticle.opacity = 0;
+        particle wordParticle;
+        wordParticle.setInitialCondition(xPosition,yPosition,0, 0, 0, 0);
+        wordParticle.particleFontSize = fontSize;
+        wordParticle.angle = ofRandom(-0.5, 0.5);
+        wordParticle.finalWord = words[i];
+        wordParticle.opacity = 0;
+        wordParticle.opacitySpeed = ofRandom(0.6, 0.8);
         
         ofColor assignedColor;
-        if(find(joy.begin(), joy.end(), letters[i]) != joy.end()) {
-            myParticle.fontColor = colors[1];
+        if(find(joy.begin(), joy.end(), words[i]) != joy.end()) {
+            wordParticle.fontColor = colors[1];
             assignedColor = colors[1];
-        } else if(find(trust.begin(), trust.end(), letters[i]) != trust.end()) {
-            myParticle.fontColor = colors[2];
+        } else if(find(trust.begin(), trust.end(), words[i]) != trust.end()) {
+            wordParticle.fontColor = colors[2];
             assignedColor = colors[2];
-        } else if(find(fear.begin(), fear.end(), letters[i]) != fear.end()) {
-            myParticle.fontColor = colors[3];
+        } else if(find(fear.begin(), fear.end(), words[i]) != fear.end()) {
+            wordParticle.fontColor = colors[3];
             assignedColor = colors[3];
-        } else if(find(surprise.begin(), surprise.end(), letters[i]) != surprise.end()) {
-            myParticle.fontColor = colors[4];
+        } else if(find(surprise.begin(), surprise.end(), words[i]) != surprise.end()) {
+            wordParticle.fontColor = colors[4];
             assignedColor = colors[4];
-        } else if(find(sadness.begin(), sadness.end(), letters[i]) != sadness.end()) {
-            myParticle.fontColor = colors[5];
+        } else if(find(sadness.begin(), sadness.end(), words[i]) != sadness.end()) {
+            wordParticle.fontColor = colors[5];
             assignedColor = colors[5];
-        } else if(find(disgust.begin(), disgust.end(), letters[i])!= disgust.end()) {
-            myParticle.fontColor = colors[6];
+        } else if(find(disgust.begin(), disgust.end(), words[i])!= disgust.end()) {
+            wordParticle.fontColor = colors[6];
             assignedColor = colors[6];
-        } else if(find(anger.begin(), anger.end(), letters[i]) != anger.end()) {
-            myParticle.fontColor = colors[7];
+        } else if(find(anger.begin(), anger.end(), words[i]) != anger.end()) {
+            wordParticle.fontColor = colors[7];
             assignedColor = colors[7];
-        } else if(find(anticipation.begin(), anticipation.end(), letters[i]) != anticipation.end()) {
-            myParticle.fontColor = colors[8];
+        } else if(find(anticipation.begin(), anticipation.end(), words[i]) != anticipation.end()) {
+            wordParticle.fontColor = colors[8];
             assignedColor = colors[8];
         } else {
-            myParticle.fontColor = colors[0];
+            wordParticle.fontColor = colors[0];
             assignedColor = colors[0];
         }
         
         
         //MAKE LETTER PARTICLE FOR DROPPING LATER
-        if(find(emotionKeywords.begin(), emotionKeywords.end(), letters[i]) != emotionKeywords.end()) {
+        if(find(emotionKeywords.begin(), emotionKeywords.end(), words[i]) != emotionKeywords.end()) {
             
-            string currentLetter = letters[i];
-            
+            string currentLetter = words[i];
+
             float xPositionLetter = xPosition;
             float yPositionLetter = yPosition;
             
@@ -310,12 +339,14 @@ void ofApp::initTextParticle(){
                 string singleLetter = ofToString(s);
                 ofRectangle letterbbox = font.getBBox(singleLetter, fontSize, 0, 0);
                 float currentLetterWidth = letterbbox.width;
-                //LETTER PARTICLE
+                float currentLetterHeight = letterbbox.height;
+                
+                //LETTER PARTICLE SETUP
                 particle letterParticle;
                 letterParticle.setInitialCondition(xPositionLetter,yPositionLetter,0, 0, 0, 0);
                 letterParticle.particleFontSize = fontSize;
                 letterParticle.angle = 0;
-                letterParticle.angleSpeed = ofRandom(-1.5, 1.5);
+                letterParticle.angleSpeed = ofRandom(-2.5, 2.5);
                 letterParticle.scatterdForceX = ofRandom(-forceValue/2, forceValue/2);
                 letterParticle.scatterdForceY = ofRandom(0, forceValue*2);
                 letterParticle.scatterdForceZ = ofRandom(-forceValue/2, forceValue*2.5);
@@ -323,19 +354,24 @@ void ofApp::initTextParticle(){
                 letterParticle.finalWord = singleLetter;
                 letterParticle.opacity = 255;
                 letterParticle.fontColor = assignedColor;
-                letterParticles.push_back(letterParticle);
+                if(yPositionLetter < ofGetWindowHeight() + currentLetterHeight) {
+                    letterParticles.push_back(letterParticle);
+                }
                 
-           //CIRCLE PARTICLE
-                for(int c = 0; c < 30; c++) {
-                particle circleParticle;
-                circleParticle.setInitialCondition(xPositionLetter,yPositionLetter,0, 0, 0, 0);
-                circleParticle.scatterdForceX = ofRandom(-forceValue/2, forceValue/2);
-                circleParticle.scatterdForceY = ofRandom(0, forceValue*2);
-                circleParticle.scatterdForceZ = ofRandom(-forceValue/2, forceValue*2.5);
-                circleParticle.damping = ofRandom(forceValue*0.01, forceValue*0.05);
-                circleParticle.fontColor = assignedColor;
-                circleParticle.opacity = 5;
-                circleParticles.push_back(circleParticle);
+                //CIRCLE PARTICLE SETUP
+                for(int c = 0; c < 15; c++) {
+                    particle circleParticle;
+                    circleParticle.setInitialCondition(xPositionLetter,yPositionLetter,0, 0, 0, 0);
+                    circleParticle.scatterdForceX = ofRandom(-forceValue/2, forceValue/2);
+                    circleParticle.scatterdForceY = ofRandom(0, forceValue*2);
+                    circleParticle.scatterdForceZ = ofRandom(-forceValue/2, forceValue*2.5);
+                    circleParticle.damping = ofRandom(forceValue*0.01, forceValue*0.05);
+                    circleParticle.fontColor = assignedColor;
+                    circleParticle.opacity = 5;
+                    circleParticle.opacitySpeed = ofRandom(1.5, 2.5);
+                    if(yPositionLetter < ofGetWindowHeight() + currentLetterHeight) {
+                        circleParticles.push_back(circleParticle);
+                    }
                 }
                 
                 //POSITION EACH LETTER
@@ -350,16 +386,17 @@ void ofApp::initTextParticle(){
         } else {
             xPosition = xPosition + currentFontWidth + space;
         }
-        particles.push_back(myParticle);
+        if(yPosition < ofGetWindowHeight() + fontHeight) {
+            wordParticles.push_back(wordParticle);
+        }
     }
+    //Shuffle to change the order when showing each word
+    random_shuffle(wordParticles.begin(), wordParticles.end());
 }
 
 //--------------------------------------------------------------
 
-void ofApp::eraseAllWordParticle(){
-    //ERASE ALL WORD PARTICLES
-    particles.clear();
-}
+
 
 //--------------------------------------------------------------
 
@@ -373,12 +410,18 @@ void ofApp::update(){
         for (unsigned int i = 0; i < boids.size(); i++){
             for (unsigned int j = 0; j < boids[i].size(); j++){
                 
-                // GO TO THE ATTRACTORS
+                // SET FORCES
                 ofVec2f force = attractors[i].attract(boids[i][j]);
                 boids[i][j].flock(boids[i]);
                 
-                if(bVideo){
+                // SCENE 1 GO TO THE ATTRACTORS
+                if(timer >= scene0){
                     boids[i][j].applyForce(force*(2+i*0.1));
+                    if(timer <= scene0 + 50) {
+                        if(j>0){
+                            ofDrawLine(boids[i][j].location.x, boids[i][j].location.y, boids[i][j-1].location.x, boids[i][j-1].location.y);
+                        }
+                    }
                 }
                 
                 boids[i][j].update();
@@ -390,23 +433,13 @@ void ofApp::update(){
             for (unsigned int j = 0; j < boids[i].size(); j++){
                 
                 ofEnableBlendMode(OF_BLENDMODE_SCREEN);
-                
                 boids[i][j].draw(rippleSize + ofRandom(10));
                 
-                ofSetColor(255);
-                
-                if(bVideo){
-                    // MAKE ATTRACTORS VISIBLE
+                if(bVideo1){
+                    //                     MAKE ATTRACTORS VISIBLE
 //                    for (int i = 0 ; i < 8; i++ ){
 //                        attractors[i].draw();
 //                    }
-                }
-                
-                // SET LINE TIMING
-                
-                ofSetLineWidth(0.1);
-                if(line){
-                    ofDrawLine(boids[i][j+2].location.x, boids[i][j+2].location.y, boids[i][j+3].location.x, boids[i][j+3].location.y);
                 }
             }
         }
@@ -415,42 +448,67 @@ void ofApp::update(){
     }
     
     // VIDEO PLAY
-    if(bVideo){
-        video.update();
-        // cout << video.getPosition() << endl;
+    if(bVideo1){
+        video1.update();
     }
     
-    //MAKE NON EMOTION-RELATED WORD DISAPPEAR
-    if(showTweetRandomly) {
-        for (int i = 0; i < particles.size(); i++){
-            particles[i].appearAllWords();
-            particles[i].update();
-            particles[i].resetForce();
-            particles[i].addAppearForce();
+    if(bVideo2){
+        video2.update();
+    }
+    
+    // SCENE3
+    // Sentence particle force update
+    if(timer > scene3) {
+        for (int i = 0; i < countSentence; i++){
+            sentenceParticles[i].addSentenceForce();
+            sentenceParticles[i].update();
+            sentenceParticles[i].resetForce();
+            sentenceParticles[i].addAppearForce();
+        }
+        spd += 0.005f;
+        if (countSentence >= 300)
+        {
+            countSentence = 300;
+            sentenceParticles.clear();
+        } else {
+            countSentence = powf(1+spd, 8);;
+        }
+        cout<<countSentence<<endl;
+    }
+    
+    // SCENE 4
+    if(timer>scene4) {
+        // Word particle force update
+        for (int i = 0; i < wordParticles.size(); i++){
+            wordParticles[i].appearAllWords();
+            wordParticles[i].update();
+            wordParticles[i].resetForce();
+            wordParticles[i].addAppearForce();
         }
         
+        // Letter particle force update
         for (int i = 0; i < letterParticles.size(); i++){
             letterParticles[i].resetForce();
             letterParticles[i].addAppearForce();
             letterParticles[i].update();
         }
         
+        // Circle particle force update
         for (int i = 0; i < circleParticles.size(); i++){
             circleParticles[i].resetForce();
             circleParticles[i].addAppearForce();
             circleParticles[i].update();
         }
     }
-       
-       
-    if(otherWordsDisapper) {
-        for (int i = 0; i < particles.size(); i++){
-            if(find(emotionKeywords.begin(), emotionKeywords.end(), particles[i].finalWord) == emotionKeywords.end()) {
-                particles[i].disappearOtherWords();
-                if(particles[i].opacity < -100) {
+    
+    // SCENE 5 : MAKE NON EMOTION-RELATED WORD DISAPPEAR
+    if(timer>scene5) {
+        for (int i = 0; i < wordParticles.size(); i++){
+            if(find(emotionKeywords.begin(), emotionKeywords.end(), wordParticles[i].finalWord) == emotionKeywords.end()) {
+                wordParticles[i].disappearOtherWords();
+                if(wordParticles[i].opacity < -200) {
                     scattered = true;
-                    eraseAllWordParticle();
-                    //                    particles.erase(particles.begin()+i);
+                    wordParticles.clear();
                 }
             }
         }
@@ -466,7 +524,7 @@ void ofApp::update(){
         }
         
         for (int i = 0; i < circleParticles.size(); i++){
-            circleParticles[i].appearAllWords();
+            circleParticles[i].appearAllCircles();
             circleParticles[i].resetForce();
             circleParticles[i].addScatteredForce();
             circleParticles[i].addDampingForce();
@@ -477,14 +535,15 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+    
     ofBackground(0);
     
     // SET TIMER
-    float timer = ofGetElapsedTimeMillis() - startTime;
+    timer = int(ofGetElapsedTimeMillis() - startTime)/100;
     
-    // URL AND INSTRUCTION
+
     if(urlShow) {
-        //INITIAL
+        //URL AND INSTRUCTION INITIAL
         string urlText = "www.myfeel.live";
         float urlWidth = url.stringWidth(urlText);
         float urlHeight = url.stringHeight(urlText);
@@ -492,12 +551,12 @@ void ofApp::draw(){
         url.drawString(urlText, urlXpos1 - urlWidth/2, urlYpos+urlHeight/2);
         url.drawString(urlText, urlXpos2 - urlWidth/2, urlYpos+urlHeight/2);
         url.drawString(urlText, urlXpos3 - urlWidth/2, urlYpos+urlHeight/2);
-
+        
         string instructionText = "Please open up your mobile and go to this link with any brower";
         ofSetColor(255,255,255,100);
         instruction.drawString(instructionText, urlXpos1 - urlWidth/2, urlYpos+ urlHeight);
         instruction.drawString(instructionText, urlXpos2 - urlWidth/2, urlYpos+ urlHeight);
-        instruction.drawString(instructionText, urlXpos2 - urlWidth/2, urlYpos+ urlHeight);
+        instruction.drawString(instructionText, urlXpos3 - urlWidth/2, urlYpos+ urlHeight);
     }
     
     if(bRipple){
@@ -514,8 +573,8 @@ void ofApp::draw(){
         rip.distance = rippleDistance;
         rip.damping = rippleDamping;
         
-        // ADJUSTING SIZE
-        if(!bVideo){
+        // ADJUSTING BLOB SIZE
+        if(bVideo1 == false && bVideo2 == false){
             float sinOfTime               = sin( ofGetElapsedTimef()/2);
             float sinOfTimeMapped         = ofMap(sinOfTime, -1, 1, 20, 120);
             float sinOfTimeMappedDamp     = ofMap(sinOfTime, -1, 1, 0.950, 0.999);
@@ -525,31 +584,29 @@ void ofApp::draw(){
             rippleDamping = sinOfTimeMappedDamp;
             rippleDistance = sinOfTimeMappedDistance; // 9  - 2
             
-            
             if(timer >= effectAStart  && timer <= effectAStart + effectATime)  {
-//                amplitude = 0.1;
                 rippleDistance = 2+ofRandom(8);
-//                frequency = ofMap(rippleDistance, 2.0, 10.0, 200, 1000);
-//                phaseInc = (TWO_PI * frequency)/(float)48000;
             } else if(timer >= effectBStart  && timer <= effectBStart + effectBTime)  {
-//                amplitude = 0.1;
                 rippleDistance = 2+ofRandom(8);
-//                frequency = ofMap(rippleDistance, 2.0, 10.0, 200, 1000);
-//                phaseInc = (TWO_PI * frequency)/(float)48000;
             } else if(timer >= effectCStart  && timer <= effectCStart + effectCTime)  {
-//                amplitude = 0.1;
                 rippleDistance = 2+ofRandom(8);
-//                frequency = ofMap(rippleDistance, 2.0, 10.0, 200, 1000);
-//                phaseInc = (TWO_PI * frequency)/(float)48000;
-            } else {
-//                frequency = 0.001;
-//                amplitude = 0.001;
             }
         }
     }
     
-    if(bVideo){
-        
+    // SCENE 1 SETUP
+    if(timer >= scene1){
+        bVideo1 = true;
+        if(vid1isPlayed == true) {
+            video1.play();
+            sound1.play();
+            video1.setVolume(0.0);
+            vid1isPlayed = false;
+        }
+    }
+    
+    // SCENE 1 DRAW
+    if(bVideo1){
         // URL DISAPPEAR
         urlYpos = -500;
         
@@ -562,77 +619,140 @@ void ofApp::draw(){
             rippleFlag = 1;
         }
         
-        if(rippleSize > 20){
-            rippleSize = rippleSize - 0.1;
-        }
-        
-        if(rippleSize <= 0){
-            rippleSize = 0;
-            for (unsigned int i = 0; i < boids.size(); i++){
-                boids[i].pop_back();
-            }
+        // DECREASE AND FIX THE SIZE WHILE HOVERING
+        if(rippleSize > 20) {
+            rippleSize = rippleSize - 0.2;
         }
         
         if (rippleDamping > 0.9) {
-            rippleDamping = rippleDamping - 0.0001;
+            rippleDamping = rippleDamping - 0.001;
         }
         rippleDistance = 2.0;
         
         //DELETE ALPHA CHANNEL
         ofEnableAlphaBlending();
         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-        video.draw(0, 0, ofGetWindowSize()[0], ofGetWindowHeight());
+        video1.draw(0, 0, ofGetWindowSize()[0], ofGetWindowHeight());
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         ofDisableAlphaBlending();
     }
     
-    if(bHide == false) {
-        gui.draw();
-        guiPosition = ofGetWindowHeight()/10;
-        string fr = "fr: " + ofToString(ofGetFrameRate());
-        string bn = "total blob: " + ofToString(boids[0].size()+boids[1].size()+boids[2].size()+boids[3].size()+boids[4].size()+boids[5].size()+boids[6].size()+boids[7].size());
-        string t = "time: " +ofToString(timer);
+    // SCENE 2 SETUP
+    if (timer >= scene2 && vid2isPlayed == true) {     // start decreasing size
+        bVideo1 = false;
+        bVideo2 = true;
+        video1.close();
+        video2.play();
+        video2.setVolume(0.0);
+        //        if (rippleFlag == 1) {
+        //            rippleSize = 20;
+        //            rippleFlag = 2;
+        //        }
+        vid2isPlayed = false;
+    }
+    
+    // SCENE 2 DRAW
+    if(bVideo2){
+        ofEnableAlphaBlending();
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        video2.draw(0, 0, ofGetWindowSize()[0], ofGetWindowHeight());
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        ofDisableAlphaBlending();
         
-        // INFORMATION TEXT
-        ofDrawBitmapString(fr, ofGetWindowSize()[0]/2-500, guiPosition);
-        ofDrawBitmapString(bn, ofGetWindowSize()[0]/2-500, guiPosition+15);
-        ofDrawBitmapString(t, ofGetWindowSize()[0]/2-500, guiPosition+30);
-        ofDrawBitmapString(mouseX, ofGetWindowSize()[0]/2-500, guiPosition+45);
-        ofDrawBitmapString(mouseY, ofGetWindowSize()[0]/2-450, guiPosition+45);
-        
-        for(int i = 0; i<8; i++) {
-            ofDrawBitmapString(boids[i].size(), ofGetWindowSize()[0]/2-500+(i*20), guiPosition+60);
+        //rippleSize = 20;
+        rippleSize = rippleSize - 0.1;
+    }
+    
+    // BLOB DISAPPEAR AFTER SCENE 2
+    if(rippleSize <= 1){
+        rippleSize = 0;
+        for (unsigned int i = 0; i < 8 ; i++){
+            for (unsigned int j = 0; j < boids[i].size(); j++){
+                boids[i].pop_back();
+            }
         }
-        
+    }
+    
+    // GUI & INFORMATION TEXT DRAW
+    gui.draw();
+    sceneManager.draw();
+    
+    string fr = "fr: " + ofToString(ofGetFrameRate());
+    string bn = "total blob: " + ofToString(boids[0].size()+boids[1].size()+boids[2].size()+boids[3].size()+boids[4].size()+boids[5].size()+boids[6].size()+boids[7].size());
+    string t = "time: " +ofToString(timer);
+    string pt = "total sentence: " + ofToString(sentenceParticles.size()) +" total word: " + ofToString(wordParticles.size()) + " total letter: " + ofToString(letterParticles.size()) + " total circle: " + ofToString(circleParticles.size());
+    
+    
+    ofSetColor(255,255,255);
+    ofDrawBitmapString(fr, ofGetWindowSize()[0]/2-500, guiPosition);
+    ofDrawBitmapString(bn, ofGetWindowSize()[0]/2-500, guiPosition+15);
+    ofDrawBitmapString(t, ofGetWindowSize()[0]/2-500, guiPosition+30);
+    ofDrawBitmapString(mouseX, ofGetWindowSize()[0]/2-500, guiPosition+45);
+    ofDrawBitmapString(mouseY, ofGetWindowSize()[0]/2-450, guiPosition+45);
+    ofDrawBitmapString(pt, ofGetWindowSize()[0]/2-500, guiPosition+75);
+    
+    
+    for(int i = 0; i<8; i++) {
+        ofDrawBitmapString(boids[i].size(), ofGetWindowSize()[0]/2-500+(i*20), guiPosition+60);
+    }
+    
+    if(bHide == false) {
+        guiPosition = ofGetWindowHeight()/10;
+        gui.setPosition(ofGetWindowSize()[0]/2, guiPosition);
+        sceneManager.setPosition(ofGetWindowSize()[0]/2+230, guiPosition);
         ofShowCursor();
-
+        
     } else {
         guiPosition = -500;
+        gui.setPosition(ofGetWindowSize()[0]/2, guiPosition);
+        sceneManager.setPosition(ofGetWindowSize()[0]/2+230, guiPosition);
         ofHideCursor();
     }
-
     
-    //TWEET WORDS COMING INTO SCREEN
-    if(showTweetRandomly) {
-//        ofBackground(0);
+    
+    // SCENE3 SETUP : SENTENCE PARTICLE
+    if (timer >= scene3 && showSentenceTransition == true) {
+        bVideo2 = false;
+        video2.close();
+        bRipple = false;
+        ofSleepMillis(500);
+        initTweetDataProcessing();
+        ofSleepMillis(1000);
+        initTextParticle();
+        showSentenceTransition = false;
+    }
+        
+        
+    if (timer >= scene3) {
         font.beginBatch();
-        for (int i = 0; i < count ; i++){
-            particles[i].draw(&font);
+        for (int i = 0; i < countSentence; i++){
+            sentenceParticles[i].draw(&font);
         }
-        count = count + particles.size()/200;
-        if (count > particles.size()) {
-            count = particles.size(); }
         font.endBatch();
     }
     
-    //MAKE LETTERS SCATTERED AND DROPPED
+    //SCENE4 DRAW : WORDS PARTICLE
+    if(timer>scene4) {
+        font.beginBatch();
+        for (int i = 0; i < countWord ; i++){
+            wordParticles[i].draw(&font);
+        }
+        countWord = countWord + wordParticles.size()/200;
+        if (countWord > wordParticles.size()) {
+            countWord = wordParticles.size(); }
+        font.endBatch();
+    }
+    
+    
     if(scattered) {
+        //LETTER PARTICLE DRAW
         font.beginBatch();
         for (int i = 0; i < letterParticles.size(); i++){
             letterParticles[i].draw(&font);
         }
         font.endBatch();
         
+        //CIRCLE PARTICLE DRAW
         for (int i = 0; i < circleParticles.size(); i++){
             circleParticles[i].drawCircle();
         }
@@ -642,52 +762,51 @@ void ofApp::draw(){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     
-    //    switch (key) {
-    //        case 'f' :
-    //            ofToggleFullscreen();
-    //            break;
-    //    }
-    
     //HIDE GUI
     if(key == 'h') {
         bHide = !bHide;
     }
     
     //PLAY VIDEO AND STOP RIPPLE
-    if ( key == 'v') {
-        cout << "video play";
-        bVideo = true;
-        video.play();
-        sound1.play();
-        video.setVolume(0.0);
-    }
+    //    if ( key == 'v') {
+    //        cout << "video play";
+    //        bVideo1 = true;
+    //        video1.play();
+    //        sound1.play();
+    //        video1.setVolume(0.0);
+    //    }
     
+    
+    if(key == 'z') {
+//        video2.close();
+//        bVideo2 = false;
+//        bRipple = false;
+//
+//        ofSleepMillis(500);
+//        initTweetDataProcessing();
+//        ofSleepMillis(1000);
+//        initTextParticle();
+//        showSentenceTransition = true;
+    }
     
     //STOP VIDEO & TWEET TEXT BEGIN
     if ( key == 't') {
-        video.stop();
-        bVideo = false;
-        bRipple = false;
-        
-        initTweetDataProcessing();
-        ofSleepMillis(1000);
-        initTextParticle();
-        ofSleepMillis(500);
-        random_shuffle(particles.begin(), particles.end());
-        showTweetRandomly = true;
+//        showTweetRandomly = true;
     }
     
     //OTHER WORDS DISAPPEAR & SCATTERED/DROPPED
     if(key == 'd') {
-        otherWordsDisapper = true;
+//        otherWordsDisapper = true;
     }
     
-    if(key == 's') {
-        gui.saveToFile("settings.xml");
-    }
-    if(key == 'l') {
-        gui.loadFromFile("settings.xml");
-    }
+//    if(key == 's') {
+//        gui.saveToFile("settings.xml");
+//        sceneManager.saveToFile("settings.xml");
+//    }
+//    if(key == 'l') {
+//        gui.loadFromFile("settings.xml");
+//        sceneManager.saveToFile("settings.xml");
+//    }
 }
 
 //--------------------------------------------------------------
@@ -713,27 +832,10 @@ void ofApp::soundSetup(){
 //--------------------------------------------------------------
 
 void ofApp::soundEffectStop(){
-        for(int i=0; i<sclouds.size(); i++) {
-            sclouds[i].stop();
-        }
+    for(int i=0; i<sclouds.size(); i++) {
+        sclouds[i].stop();
     }
-
-//--------------------------------------------------------------
-
-
-void ofApp::audioOut(float* buffer, int bufferSize, int nChannels){
-//    for(int i = 0; i< bufferSize; i++){
-//        float currentSample = 0;
-//
-//        //        phase = ofGetElapsedTimef()*TWO_PI * frequency;
-//        currentSample = sin(phase * amplitude);
-//        phase = phase + phaseInc;
-//
-//        buffer[i*nChannels + 0] = currentSample; // left channel
-//        buffer[i*nChannels + 1] = currentSample; // right channel
-//    }
 }
-
 
 //--------------------------------------------------------------
 
@@ -766,7 +868,7 @@ void ofApp::onServerEvent (ofxSocketIOData& data) {
     int gotData = data.getIntValue("intData");
     
     //DATA -> PICK TWEET AND STORE THEM
-    for(int i=0; i<20; i++) {
+    for(int i=0; i<10; i++) {
         selectionPool.push_back(gotData);
     }
     
