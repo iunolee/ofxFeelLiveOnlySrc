@@ -883,8 +883,7 @@ void ofApp::onServerEvent (ofxSocketIOData& data) {
         Boid v1;
         v1.setup();
         v1.color = colors[gotData]; // data range : 1~8
-        v1.setLocation(ofGetWindowSize()[0]/2, ofGetWindowHeight()/2);
-        
+        v1.setLocation(ofGetWindowSize()[0]*1/4 + ofRandom(ofGetWindowSize()[0]/2), ofGetWindowHeight()/4 + ofRandom(ofGetWindowHeight()/2));
         // ALLOCATE TO DIFFERENT ARRAYS GROUPED BY COLORS
         boids[gotData-1].push_back(v1); // now has size
     }

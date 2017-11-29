@@ -30,8 +30,8 @@ int main( ){
     
     ofGLFWWindowSettings settings;
     
-    settings.width = w2;
-    settings.height = h2;
+    settings.width = w3;
+    settings.height = h3;
     
     settings.glVersionMajor = 2;
     settings.glVersionMinor = 1;
