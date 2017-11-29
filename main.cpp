@@ -17,7 +17,7 @@ int main( ){
     int w3 = 1280;
     int h3 = w3*0.084375;
     
-    int w4 = 1440;
+    int w4 = 3840;
     int h4 = w4*0.084375;
     //    ofAppGlutWindow window;
     //    ofSetupOpenGL(&window, w1,h1, OF_FULLSCREEN);            // <-------- setup the GL context
@@ -40,8 +40,8 @@ int main( ){
     settings.multiMonitorFullScreen = true;
     settings.windowMode = OF_WINDOW;
     settings.decorated = false;            // eliminated the frame bar
-//    settings.setPosition(ofVec2f(0,-30));  // didn't work at IAC
-    settings.setPosition(ofVec2f(-settings.width/2.5,0));
+    settings.setPosition(ofVec2f(0,-30));  // didn't work at IAC
+//    settings.setPosition(ofVec2f(-settings.width/2.5,0));
 //
     //    settings.resizable = false;            // need to be tested (comment out)
     //    glfwWindowHint(GLFW_DECORATED, GL_FALSE);

@@ -50,12 +50,12 @@ void ofApp::setup(){
     // SCENE MANAGER
     sceneManager.setup();
     sceneManager.setPosition(ofGetWindowSize()[0]/2 + 230, guiPosition);
-    sceneManager.add(scene0.setup("scene0",  350, 0, 3000 )); // blobs go to attraction
-    sceneManager.add(scene1.setup("scene1",  450, 0, 3000 )); // video 1 play
-    sceneManager.add(scene2.setup("scene2", 550, 0, 3000 )); // video 2 play, blobs disappear
-    sceneManager.add(scene3.setup("scene3", 750, 0, 3000 )); // sentences come and go out
-    sceneManager.add(scene4.setup("scene4", 820, 0, 3000 )); // words particles come in
-    sceneManager.add(scene5.setup("scene5", 1000, 0, 3000 )); // words go out letters drop
+    sceneManager.add(scene0.setup("scene0",  600, 0, 3000 )); // blobs go to attraction
+    sceneManager.add(scene1.setup("scene1",  900, 0, 3000 )); // video 1 play
+    sceneManager.add(scene2.setup("scene2", 1450, 0, 3000 )); // video 2 play, blobs disappear
+    sceneManager.add(scene3.setup("scene3", 1810, 0, 3000 )); // sentences come and go out
+    sceneManager.add(scene4.setup("scene4", 1910, 0, 3000 )); // words particles come in
+    sceneManager.add(scene5.setup("scene5", 2120, 0, 3000 )); // words go out letters drop
 
     // SET STARTING POINT OF RIPPLE
     rip.allocate(ofGetWindowSize()[0], ofGetWindowHeight());
@@ -72,16 +72,16 @@ void ofApp::setup(){
     initSetting();
     
     // SET TWEET TEXT SIZE & RAINDROP SPEED
-    fontSize = 23;
+    fontSize = 15;
     forceValue = 0.005;
     
     // VIDEO LOAD
     video1.setPixelFormat(OF_PIXELS_RGBA);          // has to be called before loading a movie
     video1.setLoopState(OF_LOOP_NORMAL);
-    video1.load("1117_Orbits_LinuxFont_PJ_Q90.mov");
+    video1.load("1130_S01_PJ_Q90.mov");
     video2.setPixelFormat(OF_PIXELS_RGBA);          // has to be called before loading a movie
     video2.setLoopState(OF_LOOP_NORMAL);
-    video2.load("1117_Orbits_LinuxFont_PJ_Q90.mov");
+    video2.load("1130_S02_PJ_Q90.mov");
     
     // Setup font for particle
     font.setup("LinLibertine_R.ttf", 1.0, 1024, false, 0, 1);
@@ -259,11 +259,11 @@ void ofApp::initTextParticle(){
         sentenceParticle.particleFontSize = fontSize*15;
         sentenceParticle.angle = ofRandom(-3, 3);
         sentenceParticle.finalWord = tweetText[i];
-        sentenceParticle.fontColor = colors[0];
-        sentenceParticle.opacity = 150;
+        sentenceParticle.fontColor = colors[int(ofRandom(1,9))];
+        sentenceParticle.opacity = 200;
         sentenceParticle.sentenceForceX = ofRandom(-0.005, 0.005);
         sentenceParticle.sentenceForceY = ofRandom(-0.005, 0.005);
-        sentenceParticle.sentenceForceZ = ofRandom(-20, -35);
+        sentenceParticle.sentenceForceZ = ofRandom(-30, -35);
         sentenceParticles.push_back(sentenceParticle);
     }
     
@@ -417,7 +417,7 @@ void ofApp::update(){
                 // SCENE 1 GO TO THE ATTRACTORS
                 if(timer >= scene0){
                     boids[i][j].applyForce(force*(2+i*0.1));
-                    if(timer <= scene0 + 50) {
+                    if(timer <= scene0 + 25) {
                         if(j>0){
                             ofDrawLine(boids[i][j].location.x, boids[i][j].location.y, boids[i][j-1].location.x, boids[i][j-1].location.y);
                         }
@@ -465,10 +465,10 @@ void ofApp::update(){
             sentenceParticles[i].resetForce();
             sentenceParticles[i].addAppearForce();
         }
-        spd += 0.005f;
-        if (countSentence >= 300)
+        spd += 0.004f;
+        if (countSentence >= 400)
         {
-            countSentence = 300;
+            countSentence = 400;
             sentenceParticles.clear();
         } else {
             countSentence = powf(1+spd, 8);;
