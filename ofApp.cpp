@@ -56,7 +56,7 @@ void ofApp::setup(){
     sceneManager.add(scene3.setup("scene3", 1810, 0, 3000 )); // sentences come and go out
     sceneManager.add(scene4.setup("scene4", 1910, 0, 3000 )); // words particles come in
     sceneManager.add(scene5.setup("scene5", 2120, 0, 3000 )); // words go out letters drop
-
+    
     // SET STARTING POINT OF RIPPLE
     rip.allocate(ofGetWindowSize()[0], ofGetWindowHeight());
     
@@ -68,23 +68,13 @@ void ofApp::setup(){
     ofAddListener(socketIO.notifyEvent, this, &ofApp::gotEvent);
     ofAddListener(socketIO.connectionEvent, this, &ofApp::onConnection);
     
-    // INIT BASIT SETTING FOR EMOTION COLORS AND KEYWORD
-    initSetting();
-    
-    // SET TWEET TEXT SIZE & RAINDROP SPEED
-    fontSize = 15;
-    forceValue = 0.005;
-    
     // VIDEO LOAD
     video1.setPixelFormat(OF_PIXELS_RGBA);          // has to be called before loading a movie
     video1.setLoopState(OF_LOOP_NORMAL);
-    video1.load("1130_S01_PJ_Q90.mov");
+    video1.load("1130_S01_PJQ90_p351.mov");
     video2.setPixelFormat(OF_PIXELS_RGBA);          // has to be called before loading a movie
     video2.setLoopState(OF_LOOP_NORMAL);
-    video2.load("1130_S02_PJ_Q90.mov");
-    
-    // Setup font for particle
-    font.setup("LinLibertine_R.ttf", 1.0, 1024, false, 0, 1);
+    video2.load("1130_S02_PJQ90_2.mov");
     
     // URL AND INSTRUCTION
     url.load("Roboto-Thin.ttf",urlSize, true, false, true);
@@ -110,6 +100,16 @@ void ofApp::setup(){
     boids.push_back(blobs6);
     boids.push_back(blobs7);
     boids.push_back(blobs8);
+    
+    // INIT BASIT SETTING FOR EMOTION COLORS AND KEYWORD
+    initSetting();
+    
+    // SET TWEET TEXT SIZE & RAINDROP SPEED
+    fontSize = 22;
+    forceValue = 0.002;
+    
+    // Setup font for particle
+    font.setup("LinLibertine_R.ttf", 1.0, 1024, false, 0, 1);
 }
 
 //--------------------------------------------------------------
@@ -260,10 +260,10 @@ void ofApp::initTextParticle(){
         sentenceParticle.angle = ofRandom(-3, 3);
         sentenceParticle.finalWord = tweetText[i];
         sentenceParticle.fontColor = colors[int(ofRandom(1,9))];
-        sentenceParticle.opacity = 200;
+        sentenceParticle.opacity = 175;
         sentenceParticle.sentenceForceX = ofRandom(-0.005, 0.005);
         sentenceParticle.sentenceForceY = ofRandom(-0.005, 0.005);
-        sentenceParticle.sentenceForceZ = ofRandom(-30, -35);
+        sentenceParticle.sentenceForceZ = ofRandom(-15, -20);
         sentenceParticles.push_back(sentenceParticle);
     }
     
@@ -347,9 +347,9 @@ void ofApp::initTextParticle(){
                 letterParticle.particleFontSize = fontSize;
                 letterParticle.angle = 0;
                 letterParticle.angleSpeed = ofRandom(-2.5, 2.5);
-                letterParticle.scatterdForceX = ofRandom(-forceValue/2, forceValue/2);
+                letterParticle.scatterdForceX = ofRandom(-forceValue*0.2, forceValue*0.2);
                 letterParticle.scatterdForceY = ofRandom(0, forceValue*2);
-                letterParticle.scatterdForceZ = ofRandom(-forceValue/2, forceValue*2.5);
+                letterParticle.scatterdForceZ = ofRandom(-forceValue*0.5, forceValue*3);
                 letterParticle.damping = ofRandom(forceValue*0.01, forceValue*0.05);
                 letterParticle.finalWord = singleLetter;
                 letterParticle.opacity = 255;
@@ -359,12 +359,12 @@ void ofApp::initTextParticle(){
                 }
                 
                 //CIRCLE PARTICLE SETUP
-                for(int c = 0; c < 15; c++) {
+                for(int c = 0; c < 20; c++) {
                     particle circleParticle;
                     circleParticle.setInitialCondition(xPositionLetter,yPositionLetter,0, 0, 0, 0);
-                    circleParticle.scatterdForceX = ofRandom(-forceValue/2, forceValue/2);
+                    circleParticle.scatterdForceX = ofRandom(-forceValue*0.5, forceValue*0.5);
                     circleParticle.scatterdForceY = ofRandom(0, forceValue*2);
-                    circleParticle.scatterdForceZ = ofRandom(-forceValue/2, forceValue*2.5);
+                    circleParticle.scatterdForceZ = ofRandom(-forceValue*0.5, forceValue*3.5);
                     circleParticle.damping = ofRandom(forceValue*0.01, forceValue*0.05);
                     circleParticle.fontColor = assignedColor;
                     circleParticle.opacity = 5;
@@ -465,15 +465,15 @@ void ofApp::update(){
             sentenceParticles[i].resetForce();
             sentenceParticles[i].addAppearForce();
         }
-        spd += 0.004f;
-        if (countSentence >= 400)
+        spd += 0.003f;
+        if (countSentence >= 250)
         {
-            countSentence = 400;
+            countSentence = 250;
             sentenceParticles.clear();
         } else {
             countSentence = powf(1+spd, 8);;
         }
-        cout<<countSentence<<endl;
+//        cout<<countSentence<<endl;
     }
     
     // SCENE 4

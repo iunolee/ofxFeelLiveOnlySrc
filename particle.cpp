@@ -52,7 +52,6 @@ void particle::disappearOtherWords(){
 
 void particle::appearAllWords(){
     if(opacity < 255) {
-        cout << opacity << endl;
         opacity = opacity + opacitySpeed;
     }
 }
@@ -67,7 +66,7 @@ void particle::draw(ofxFontStash * particleFont){
     ofPushMatrix();
     ofSetColor(fontColor, opacity);
     ofTranslate(pos.x, pos.y, pos.z);
-    ofRotate(angle, 0.015, 0.03, 0.05);
+    ofRotate(angle, 0.05, 0.05, 0.5);
     particleFont->drawBatch(finalWord, particleFontSize, 0, 0);
     ofPopMatrix();
 }
@@ -76,9 +75,8 @@ void particle::drawCircle(){
     ofPushMatrix();
     ofSetColor(fontColor, opacity);
     ofTranslate(pos.x, pos.y, pos.z);
-//    ofRotate(angle, 1.5, 3, 2);
 //    ofSetCircleResolution(20);
-    ofDrawCircle(0, 0, 0.85);
+    ofDrawCircle(0, 0, 0.75);
     ofPopMatrix();
 }
 
