@@ -40,7 +40,7 @@ int main( ){
     settings.multiMonitorFullScreen = true;
     settings.windowMode = OF_WINDOW;
     settings.decorated = false;            // eliminated the frame bar
-    settings.setPosition(ofVec2f(0,-30));  // for IAC
+    settings.setPosition(ofVec2f(0,-35));  // for IAC
 //    settings.setPosition(ofVec2f(-3000,0)); // for labtop
 //
     //    settings.resizable = false;            // need to be tested (comment out)

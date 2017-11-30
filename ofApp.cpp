@@ -22,6 +22,7 @@ void ofApp::setup(){
     bHide = true;
     vid1isPlayed = true;
     vid2isPlayed = true;
+    soundIsPlayed = true;
     urlShow = true;
     scattered = false;
     showSentenceTransition = true;
@@ -51,14 +52,14 @@ void ofApp::setup(){
     sceneManager.setup();
     sceneManager.setPosition(ofGetWindowSize()[0]/2 + 230, guiPosition);
     sceneManager.add(scene0.setup("scene0",  600, 0, 3000 )); // blobs go to attraction
-    sceneManager.add(scene1.setup("scene1",  900, 0, 3000 )); // video 1 play
-    sceneManager.add(scene2.setup("scene2", 1450, 0, 3000 )); // video 2 play, blobs disappear
-    sceneManager.add(scene3.setup("scene3", 1810, 0, 3000 )); // sentences come and go out
-    sceneManager.add(scene4.setup("scene4", 1910, 0, 3000 )); // words particles come in
-    sceneManager.add(scene5.setup("scene5", 2120, 0, 3000 )); // words go out letters drop
+    sceneManager.add(scene1.setup("scene1",  970, 0, 3000 )); // video 1 play
+    sceneManager.add(scene2.setup("scene2", 1440, 0, 3000 )); // video 2 play, blobs disappear
+    sceneManager.add(scene3.setup("scene3", 1790, 0, 3000 )); // sentences come and go out
+    sceneManager.add(scene4.setup("scene4", 1920, 0, 3000 )); // words particles come in
+    sceneManager.add(scene5.setup("scene5", 2020, 0, 3000 )); // words go out letters drop
     
     // SET STARTING POINT OF RIPPLE
-    rip.allocate(ofGetWindowSize()[0], ofGetWindowHeight());
+    rip.allocate(ofGetWindowSize()[0],ofGetWindowHeight());
     
     // SOCKET SETUP
     isConnected = false;
@@ -594,12 +595,19 @@ void ofApp::draw(){
         }
     }
     
+    // SCENE 0 SETUP
+    if(timer >= scene0 + 130){
+        if(soundIsPlayed == true) {
+            sound1.play();
+            soundIsPlayed = false;
+        }
+    }
+    
     // SCENE 1 SETUP
     if(timer >= scene1){
         bVideo1 = true;
         if(vid1isPlayed == true) {
             video1.play();
-            sound1.play();
             video1.setVolume(0.0);
             vid1isPlayed = false;
         }
@@ -812,8 +820,9 @@ void ofApp::keyPressed(int key){
 //--------------------------------------------------------------
 
 void ofApp::soundSetup(){
-    sound1.load("bgm.wav");
-    int nFiles = dir.listDir("cloud");
+    sound1.load("bgm_mono_david.wav");
+//    sound1.setVolume(1.0);
+    int nFiles = dir.listDir("cloud_mono");
     
     if(nFiles) {
         for(int i=0; i<dir.size(); i++) {
@@ -824,7 +833,7 @@ void ofApp::soundSetup(){
         }
         
         for(int i=0; i<sclouds.size(); i++) {
-            sclouds[i].setVolume(0.1f);
+            sclouds[i].setVolume(1.0);
         }
     }
 }

@@ -163,6 +163,8 @@ public:
     vector <ofSoundPlayer> sclouds;
     ofDirectory dir;
     
+    bool soundIsPlayed;
+    
     float myArray[100];
     float frequency;
     float phase;
