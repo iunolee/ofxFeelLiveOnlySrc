@@ -877,7 +877,7 @@ void ofApp::onServerEvent (ofxSocketIOData& data) {
         urlShow = false;
         bRipple = true;
         
-        sclouds[ofRandom(22)].play();
+        sclouds[ofRandom(9)].play();
         
         // CREATE A BLOB
         Boid v1;
