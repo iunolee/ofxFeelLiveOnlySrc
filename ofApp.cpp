@@ -51,12 +51,21 @@ void ofApp::setup(){
     // SCENE MANAGER
     sceneManager.setup();
     sceneManager.setPosition(ofGetWindowSize()[0]/2 + 230, guiPosition);
-    sceneManager.add(scene0.setup("scene0",  600, 0, 3000 )); // blobs go to attraction
-    sceneManager.add(scene1.setup("scene1",  970, 0, 3000 )); // video 1 play
-    sceneManager.add(scene2.setup("scene2", 1440, 0, 3000 )); // video 2 play, blobs disappear
-    sceneManager.add(scene3.setup("scene3", 1790, 0, 3000 )); // sentences come and go out
-    sceneManager.add(scene4.setup("scene4", 1920, 0, 3000 )); // words particles come in
-    sceneManager.add(scene5.setup("scene5", 2020, 0, 3000 )); // words go out letters drop
+    sceneManager.add(scene0.setup("scene0",  800, 0, 3000 )); // blobs go to attraction
+    sceneManager.add(scene1.setup("scene1",  1170, 0, 3000 )); // video 1 play
+    sceneManager.add(scene2.setup("scene2", 1670, 0, 3000 )); // video 2 play, blobs disappear
+    sceneManager.add(scene3.setup("scene3", 2040, 0, 3000 )); // sentences come and go out
+    sceneManager.add(scene4.setup("scene4", 2190, 0, 3000 )); // words particles come in
+    sceneManager.add(scene5.setup("scene5", 2440, 0, 3000 )); // words go out letters drop
+    
+    
+    // for particle quick test
+//    sceneManager.add(scene0.setup("scene0",  60, 0, 3000 )); // blobs go to attraction
+//    sceneManager.add(scene1.setup("scene1",  97, 0, 3000 )); // video 1 play
+//    sceneManager.add(scene2.setup("scene2", 144, 0, 3000 )); // video 2 play, blobs disappear
+//    sceneManager.add(scene3.setup("scene3", 180, 0, 3000 )); // sentences come and go out
+//    sceneManager.add(scene4.setup("scene4", 320, 0, 3000 )); // words particles come in
+//    sceneManager.add(scene5.setup("scene5", 520, 0, 3000 )); // words go out letters drop
     
     // SET STARTING POINT OF RIPPLE
     rip.allocate(ofGetWindowSize()[0],ofGetWindowHeight());
@@ -64,6 +73,8 @@ void ofApp::setup(){
     // SOCKET SETUP
     isConnected = false;
     address = "http://67.205.153.66:9999";
+//    address = "http://localhost:3000";
+
     status = "not connected";
     socketIO.setup(address);
     ofAddListener(socketIO.notifyEvent, this, &ofApp::gotEvent);
@@ -79,7 +90,7 @@ void ofApp::setup(){
     
     // URL AND INSTRUCTION
     url.load("Roboto-Thin.ttf",urlSize, true, false, true);
-    instruction.load("Roboto-Thin.ttf",instructionSize, true, false, true);
+    instruction.load("Roboto-Regular.ttf",instructionSize, true, false, true);
     
     // SOUND SETUP
     soundSetup();
@@ -466,7 +477,7 @@ void ofApp::update(){
             sentenceParticles[i].resetForce();
             sentenceParticles[i].addAppearForce();
         }
-        spd += 0.003f;
+        spd += 0.0025f;
         if (countSentence >= 250)
         {
             countSentence = 250;
@@ -553,8 +564,8 @@ void ofApp::draw(){
         url.drawString(urlText, urlXpos2 - urlWidth/2, urlYpos+urlHeight/2);
         url.drawString(urlText, urlXpos3 - urlWidth/2, urlYpos+urlHeight/2);
         
-        string instructionText = "Please open up your mobile and go to this link with any brower";
-        ofSetColor(255,255,255,100);
+        string instructionText = "Please open up your mobile and go to this link with any browser";
+        ofSetColor(255,255,255,200);
         instruction.drawString(instructionText, urlXpos1 - urlWidth/2, urlYpos+ urlHeight);
         instruction.drawString(instructionText, urlXpos2 - urlWidth/2, urlYpos+ urlHeight);
         instruction.drawString(instructionText, urlXpos3 - urlWidth/2, urlYpos+ urlHeight);
@@ -668,7 +679,7 @@ void ofApp::draw(){
         ofDisableAlphaBlending();
         
         //rippleSize = 20;
-        rippleSize = rippleSize - 0.1;
+        rippleSize = rippleSize - 0.2;
     }
     
     // BLOB DISAPPEAR AFTER SCENE 2
@@ -886,7 +897,7 @@ void ofApp::onServerEvent (ofxSocketIOData& data) {
         urlShow = false;
         bRipple = true;
         
-        sclouds[ofRandom(9)].play();
+        sclouds[ofRandom(10)].play();
         
         // CREATE A BLOB
         Boid v1;

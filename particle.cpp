@@ -1,9 +1,9 @@
 #include "particle.hpp"
 
 particle::particle() {
-    appearForceX = ofRandom(-0.00002, 0.00002);
-    appearForceY = ofRandom(-0.00002, 0.00002);
-    appearForceZ = ofRandom(-0.00002, 0.00002);
+    appearForceX = ofRandom(-0.000015, 0.000015);
+    appearForceY = ofRandom(-0.000015, 0.000015);
+    appearForceZ = ofRandom(-0.000015, 0.000015);
 }
 
 void particle::resetForce(){
