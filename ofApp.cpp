@@ -51,12 +51,12 @@ void ofApp::setup(){
     // SCENE MANAGER
     sceneManager.setup();
     sceneManager.setPosition(ofGetWindowSize()[0]/2 + 230, guiPosition);
-    sceneManager.add(scene0.setup("scene0",  800, 0, 3000 )); // blobs go to attraction
-    sceneManager.add(scene1.setup("scene1",  1170, 0, 3000 )); // video 1 play
-    sceneManager.add(scene2.setup("scene2", 1670, 0, 3000 )); // video 2 play, blobs disappear
-    sceneManager.add(scene3.setup("scene3", 2040, 0, 3000 )); // sentences come and go out
-    sceneManager.add(scene4.setup("scene4", 2190, 0, 3000 )); // words particles come in
-    sceneManager.add(scene5.setup("scene5", 2440, 0, 3000 )); // words go out letters drop
+    sceneManager.add(scene0.setup("scene0",  750, 0, 3000 )); // blobs go to attraction
+    sceneManager.add(scene1.setup("scene1",  1050, 0, 3000 )); // video 1 play
+    sceneManager.add(scene2.setup("scene2", 1550, 0, 3000 )); // video 2 play, blobs disappear
+    sceneManager.add(scene3.setup("scene3", 1920, 0, 3000 )); // sentences come and go out
+    sceneManager.add(scene4.setup("scene4", 2070, 0, 3000 )); // words particles come in
+    sceneManager.add(scene5.setup("scene5", 2300, 0, 3000 )); // words go out letters drop
     
     
     // for particle quick test
@@ -73,20 +73,23 @@ void ofApp::setup(){
     // SOCKET SETUP
     isConnected = false;
     address = "http://67.205.153.66:9999";
-//    address = "http://localhost:3000";
+    address2 = "http://138.197.87.195:9999";
 
     status = "not connected";
     socketIO.setup(address);
+    socketIO2.setup(address2);
     ofAddListener(socketIO.notifyEvent, this, &ofApp::gotEvent);
     ofAddListener(socketIO.connectionEvent, this, &ofApp::onConnection);
+    ofAddListener(socketIO2.notifyEvent, this, &ofApp::gotEvent);
+    ofAddListener(socketIO2.connectionEvent, this, &ofApp::onConnection);
     
     // VIDEO LOAD
     video1.setPixelFormat(OF_PIXELS_RGBA);          // has to be called before loading a movie
     video1.setLoopState(OF_LOOP_NORMAL);
-    video1.load("1130_S01_PJQ90_p351.mov");
+    video1.load("1204_S01_p351.mov");
     video2.setPixelFormat(OF_PIXELS_RGBA);          // has to be called before loading a movie
     video2.setLoopState(OF_LOOP_NORMAL);
-    video2.load("1130_S02_PJQ90_2.mov");
+    video2.load("1204_S02.mov");
     
     // URL AND INSTRUCTION
     url.load("Roboto-Thin.ttf",urlSize, true, false, true);
@@ -100,9 +103,17 @@ void ofApp::setup(){
         attractor myAttractors;
         attractors.push_back(myAttractors);
         attractors[i].setup();
-        attractors[i].setLocation((ofGetWindowSize()[0]*0.05)+(i * ofGetWindowSize()[0]*0.128), ofGetWindowHeight()/2);
+//        attractors[i].setLocation((ofGetWindowSize()[0]*0.05)+(i * ofGetWindowSize()[0]*0.128), ofGetWindowHeight()/2);
     }
-    
+    attractors[0].setLocation(432, 315);
+    attractors[1].setLocation(1405.7,315);
+    attractors[2].setLocation(2379.4, 315);
+    attractors[3].setLocation(3353.1, 315);
+    attractors[4].setLocation(4326.9, 315);
+    attractors[5].setLocation(5300.6, 315);
+    attractors[6].setLocation(6274.3, 315);
+    attractors[7].setLocation(7248.0, 315);
+
     // BLOB ARRAY SETUP
     boids.push_back(blobs1);
     boids.push_back(blobs2);
@@ -428,7 +439,7 @@ void ofApp::update(){
                 
                 // SCENE 1 GO TO THE ATTRACTORS
                 if(timer >= scene0){
-                    boids[i][j].applyForce(force*(2+i*0.1));
+                    boids[i][j].applyForce(force*(3.5+(j*(-0.01))));
                     if(timer <= scene0 + 25) {
                         if(j>0){
                             ofDrawLine(boids[i][j].location.x, boids[i][j].location.y, boids[i][j-1].location.x, boids[i][j-1].location.y);
@@ -543,6 +554,17 @@ void ofApp::update(){
             circleParticles[i].update();
         }
     }
+    
+    // ENDING : LETTER & CIRCLE PARTICLES DISAPEEAR
+    if(timer > scene5 + 400) {
+        for (int i = 0; i < letterParticles.size(); i++){
+            letterParticles[i].disappearOtherWords();
+        }
+        
+        for (int i = 0; i < circleParticles.size(); i++){
+            circleParticles[i].disappearOtherWords();
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -564,7 +586,7 @@ void ofApp::draw(){
         url.drawString(urlText, urlXpos2 - urlWidth/2, urlYpos+urlHeight/2);
         url.drawString(urlText, urlXpos3 - urlWidth/2, urlYpos+urlHeight/2);
         
-        string instructionText = "Please open up your mobile and go to this link with any browser";
+        string instructionText = "Please open up your mobile and visit this link with any browser";
         ofSetColor(255,255,255,200);
         instruction.drawString(instructionText, urlXpos1 - urlWidth/2, urlYpos+ urlHeight);
         instruction.drawString(instructionText, urlXpos2 - urlWidth/2, urlYpos+ urlHeight);
@@ -796,7 +818,7 @@ void ofApp::keyPressed(int key){
     //    }
     
     
-    if(key == 'z') {
+//    if(key == 'z') {
 //        video2.close();
 //        bVideo2 = false;
 //        bRipple = false;
@@ -806,17 +828,17 @@ void ofApp::keyPressed(int key){
 //        ofSleepMillis(1000);
 //        initTextParticle();
 //        showSentenceTransition = true;
-    }
+//    }
     
     //STOP VIDEO & TWEET TEXT BEGIN
-    if ( key == 't') {
+//    if ( key == 't') {
 //        showTweetRandomly = true;
-    }
+//    }
     
     //OTHER WORDS DISAPPEAR & SCATTERED/DROPPED
-    if(key == 'd') {
+//    if(key == 'd') {
 //        otherWordsDisapper = true;
-    }
+//    }
     
 //    if(key == 's') {
 //        gui.saveToFile("settings.xml");
@@ -869,6 +891,7 @@ void ofApp::onConnection () {
 void ofApp::bindEvents () {
     std::string serverEventName = "server-event";
     socketIO.bindEvent(serverEvent, serverEventName);
+    socketIO2.bindEvent(serverEvent, serverEventName);
     ofAddListener(serverEvent, this, &ofApp::onServerEvent);
 }
 
@@ -907,4 +930,15 @@ void ofApp::onServerEvent (ofxSocketIOData& data) {
         // ALLOCATE TO DIFFERENT ARRAYS GROUPED BY COLORS
         boids[gotData-1].push_back(v1); // now has size
     }
+    
+    string pt = "total sentence: " + ofToString(sentenceParticles.size()) +" total word: " + ofToString(wordParticles.size()) + " total letter: " + ofToString(letterParticles.size()) + " total circle: " + ofToString(circleParticles.size());
+    
+//    socketIO.emit("pongy", "hello there");
+    std::string pong = "pongy";
+    std::string bn = "total blob: " + ofToString(boids[0].size()+boids[1].size()+boids[2].size()+boids[3].size()+boids[4].size()+boids[5].size()+boids[6].size()+boids[7].size());
+    socketIO2.emit(pong, bn);
+
+
 }
+
+

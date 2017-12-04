@@ -8,9 +8,9 @@ class attractor {
 
 	public:
     void setup(){
-      location.set(ofGetWidth()/2, ofGetHeight()/2);
+//      location.set(ofGetWidth()/2, ofGetHeight()/2);
       mass = 20;
-      G = 1;
+      G = 4;
       dragVector.set(0, 0);
     }
 
@@ -20,7 +20,7 @@ class attractor {
       // Distance between objects
       float distance = force.length();
       // Limiting the distance to eliminate "extreme" results for very close or very far objects
-      distance = ofClamp(distance,5.0,25.0);
+      distance = ofClamp(distance,45,60.0);
       // Normalize vector (distance doesn't matter here, we just want this vector for direction)
       force.normalize();
       // Calculate gravitional force magnitude

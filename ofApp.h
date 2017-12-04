@@ -4,6 +4,7 @@
 #include "particle.hpp"
 #include "ofEvents.h"
 #include "ofxSocketIO.h"
+#include "ofxSocketIOData.h"
 #include "ofxRipples.h"
 #include "ofxGUI.h"
 #include "ofxFX.h"
@@ -32,20 +33,21 @@ public:
     void bindEvents();
     void gotEvent(std::string& name);
     void onServerEvent(ofxSocketIOData& data);
+
+    ofxSocketIO socketIO;
+    ofxSocketIO socketIO2;
+    
+    ofEvent<ofxSocketIOData&> serverEvent;
+
+    std::string address;
+    std::string address2;
+    
+    std::string status;
+    
     
     // SOUND PART
     void soundSetup();
     void soundEffectStop();
-    
-    ofxSocketIO socketIO;
-    
-    ofEvent<ofxSocketIOData&> serverEvent;
-    ofEvent<ofxSocketIOData&> pingEvent;
-    ofEvent<ofxSocketIOData&> nspingEvent;
-    
-    std::string address;
-    std::string status;
-    
     
     // FOR TWEET TEXT PARTICLE
     int fontSize;
