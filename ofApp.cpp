@@ -26,6 +26,7 @@ void ofApp::setup(){
     urlShow = true;
     scattered = false;
     showSentenceTransition = true;
+    backgroundColorIsChanged = false;
     
     // GUI
     gui.setup();
@@ -33,7 +34,7 @@ void ofApp::setup(){
     gui.add(rippleSize.setup("size", 100, 1, 150));
     gui.add(rippleDistance.setup("distance", 2, 1, 10));
     gui.add(rippleDamping.setup("damping", 0.995, 0.900, 0.999));
-    gui.add(urlYpos.setup("urlYpos", 300, 0, ofGetWindowHeight()));
+    gui.add(urlYpos.setup("urlYpos", 290, 0, ofGetWindowHeight()));
     gui.add(urlXpos1.setup("urlXpos1", 1075, 0, ofGetWindowSize()[0]));
     gui.add(urlXpos2.setup("urlXpos2", 3380, 0, ofGetWindowSize()[0]));
     gui.add(urlXpos3.setup("urlXpos3", 5450, 0, ofGetWindowSize()[0]));
@@ -89,7 +90,7 @@ void ofApp::setup(){
     video1.load("1204_S01_p351.mov");
     video2.setPixelFormat(OF_PIXELS_RGBA);          // has to be called before loading a movie
     video2.setLoopState(OF_LOOP_NORMAL);
-    video2.load("1204_S02.mov");
+    video2.load("1207_scene2.mov");
     
     // URL AND INSTRUCTION
     url.load("Roboto-Thin.ttf",urlSize, true, false, true);
@@ -128,7 +129,7 @@ void ofApp::setup(){
     initSetting();
     
     // SET TWEET TEXT SIZE & RAINDROP SPEED
-    fontSize = 22;
+    fontSize = 23;
     forceValue = 0.002;
     
     // Setup font for particle
@@ -147,9 +148,9 @@ void ofApp::initSetting () {
     }
     
     //initial value
-    colors[0].r = 255;
-    colors[0].g = 255;
-    colors[0].b = 255;
+    colors[0].r = 40;
+    colors[0].g = 40;
+    colors[0].b = 40;
     
     //joy
     colors[1].r = 248;
@@ -382,7 +383,7 @@ void ofApp::initTextParticle(){
                 }
                 
                 //CIRCLE PARTICLE SETUP
-                for(int c = 0; c < 20; c++) {
+                for(int c = 0; c < 17; c++) {
                     particle circleParticle;
                     circleParticle.setInitialCondition(xPositionLetter,yPositionLetter,0, 0, 0, 0);
                     circleParticle.scatterdForceX = ofRandom(-forceValue*0.5, forceValue*0.5);
@@ -498,6 +499,18 @@ void ofApp::update(){
         }
 //        cout<<countSentence<<endl;
     }
+    
+    if(timer>scene4 - 5 && backgroundColorIsChanged == false) {
+        if(backgroundColorChange < 255) {
+        backgroundColorChange += 5;
+        } else {
+            backgroundColorChange = 255;
+            backgroundColorIsChanged = true;
+        }
+    }
+    
+
+    
     
     // SCENE 4
     if(timer>scene4) {
@@ -629,7 +642,7 @@ void ofApp::draw(){
     }
     
     // SCENE 0 SETUP
-    if(timer >= scene0 + 130){
+    if(timer >= scene0 - 660){
         if(soundIsPlayed == true) {
             sound1.play();
             soundIsPlayed = false;
@@ -774,6 +787,8 @@ void ofApp::draw(){
     
     //SCENE4 DRAW : WORDS PARTICLE
     if(timer>scene4) {
+        ofBackground(backgroundColorChange);
+
         font.beginBatch();
         for (int i = 0; i < countWord ; i++){
             wordParticles[i].draw(&font);
@@ -853,7 +868,7 @@ void ofApp::keyPressed(int key){
 //--------------------------------------------------------------
 
 void ofApp::soundSetup(){
-    sound1.load("bgm_mono_david.wav");
+    sound1.load("bgm_1207_final.wav");
 //    sound1.setVolume(1.0);
     int nFiles = dir.listDir("cloud_mono");
     

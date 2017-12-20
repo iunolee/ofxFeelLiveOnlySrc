@@ -33,11 +33,13 @@ public:
     void bindEvents();
     void gotEvent(std::string& name);
     void onServerEvent(ofxSocketIOData& data);
+     void onServerEvent2(ofxSocketIOData& data);
 
     ofxSocketIO socketIO;
     ofxSocketIO socketIO2;
     
     ofEvent<ofxSocketIOData&> serverEvent;
+    ofEvent<ofxSocketIOData&> serverEvent2;
 
     std::string address;
     std::string address2;
@@ -179,5 +181,9 @@ public:
     bool urlShow;
     int urlAlpha = 100;
     int guiPosition = -500;
+    
+    float backgroundColorChange;
+    bool backgroundColorIsChanged;
+    
 };
 
